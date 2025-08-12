@@ -1,6 +1,6 @@
 # RLFromScratch
 
-This repo implements **Group Relative Policy Optimization (GRPO)** and **Direct Preference Optimization (DPO)** from scratch in PyTorch, without relying on out-of-the-shelf libraries like [TRL](https://github.com/huggingface/trl) or [VERL](https://github.com/volcengine/verl).
+This repo implements **Group Relative Policy Optimization (GRPO)** and **Direct Preference Optimization (DPO)** from scratch in PyTorch, without relying on off-the-shelf libraries like [TRL](https://github.com/huggingface/trl) or [VERL](https://github.com/volcengine/verl).
 
 - GRPO paper: [arXiv:2402.03300](https://arxiv.org/abs/2402.03300)  
 - DPO paper: [arXiv:2305.18290](https://arxiv.org/abs/2305.18290)
