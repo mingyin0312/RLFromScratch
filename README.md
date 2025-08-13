@@ -11,7 +11,7 @@ To open the black box: we unpack the training details—masking, KL penalties, s
 
 ## Quick results
 - **GRPO** on **Llama-3.2-1B-Instruct** (GSM8K): **~10% → ~23%** accuracy in **1 epoch**.  
-- **DPO** on **Llama-3.2-1B** using **Tiny-Safe-Pair** ([safe-pair-data](https://huggingface.co/datasets/Mingyin0312/safe-pair-data)): **~50% → ~60%** preference accuracy.
+- **DPO** on **Llama-3.2-1B** using **Tiny-Safe-Pair** ([safe-pair-data](https://huggingface.co/datasets/Mingyin0312/safe-pair-data)): **~50% → ~60%** preference accuracy in **3 epochs**.
 
 Both evaluation pipelines are included.
 
