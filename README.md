@@ -17,6 +17,22 @@ Both evaluation pipelines are included.
 
 ## Training setup
 
-The scripts default to **multi-GPU** training with **PyTorch DDP**, and can be **easily adapted to a single GPU** by adjusting the launch command and disabling distributed initialization.
+The scripts default to **multi-GPU** training with **PyTorch DDP**, and can be **easily adapted to a single GPU** by adjusting the launch command and disabling distributed initialization. The evaluation is preformed using a single GPU. 
+
+- **Training:**  
+  ```bash
+  torchrun --standalone --nproc_per_node=8 dpo/grpo_train_from_scratch.py
+
+- **Training:**  
+  ```bash
+  torchrun --standalone --nproc_per_node=8 dpo/grpo_evaluation.py
+
+
+## Algorithm Resources
+
+I’ve written explanations of the two algorithms in the following blogs:
+
+- [DPO](https://mingyin0312.github.io/blog/2025/dpo/) 
+- [GRPO](https://mingyin0312.github.io/blog/2025/grpo/)
 
 ---

@@ -1,8 +1,7 @@
 import os
-from datasets import load_dataset, load_from_disk
+from datasets import load_from_disk
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from tqdm import tqdm
-import torch.nn as nn
 import torch 
 import math
 from torch.nn.utils.rnn import pad_sequence
@@ -13,13 +12,12 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 torch.autograd.set_detect_anomaly(True)
 
 # 1. Load tokenizer
-local_dir = "Youe_model" # mine is Llama-3.2-1B
+local_dir = "Your_model" # mine is Llama-3.2-1B
 tokenizer = AutoTokenizer.from_pretrained(local_dir, use_fast=False)
 # 2. Load the train split of SAFE-RLHF
 dataset = load_from_disk("safe_pair_data/")["train"]
 print(f"There are {len(dataset)} examples.")
-
-# --------------------------
+# -------------------------
 
 # Initialize distributed training (NCCL backend for 8 GPUs)
 dist.init_process_group(backend="nccl")
@@ -29,10 +27,10 @@ world_size = dist.get_world_size()
 torch.cuda.set_device(local_rank)
 master_process = local_rank == 0
 
-# ─── reuse eos_token as pad_token ───────────────────────────────────
+# ─── reuse eos_token as pad_token ─────────────────────────────
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.pad_token_id = tokenizer.eos_token_id
-
+# Load model
 model = AutoModelForCausalLM.from_pretrained(local_dir)
 model.to(local_rank)
 
@@ -84,7 +82,7 @@ def collate_fn(batch):
 
     return input_ids.to(local_rank), attention_mask.to(local_rank), labels_tensor.to(local_rank)
 
-
+# set up learning rate
 def get_lr(it, max_steps, warmup_steps = None, max_lr=2e-6, min_lr=2e-7):
     warmup_steps = int(0.01*max_steps)
     # 1) linear warmup for warmup_iters steps
@@ -111,15 +109,12 @@ train_loader = DataLoader(
     batch_size=4,
     sampler=train_sampler,
     collate_fn=collate_fn,
-    # num_workers=4,    # adjust if needed
-    # pin_memory=True
 )
 
 
 max_steps = len(train_loader)
 if master_process:
-    print(f"⚙️  This epoch will run for {max_steps} steps")
-
+    print(f"This epoch will run for {max_steps} steps")
 
 # Optimizer
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-6)
@@ -135,7 +130,6 @@ if master_process:
     log_file = os.path.join(log_dir, f"log.txt")
     with open(log_file, "w") as f: # open for writing to clear the file
         pass
-
 
 gradient_accumulation_steps = 4
 optimizer.zero_grad(set_to_none=True)
@@ -158,7 +152,6 @@ for epoch in range(num_epochs):
         if torch.isnan(logits).any() or torch.isinf(logits).any():
             raise RuntimeError(f"NaN/Inf in logits at step {step}")
 
-
         # Forward ref model (no grad)
         with torch.no_grad():
             with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
@@ -173,8 +166,6 @@ for epoch in range(num_epochs):
         # **Early check #2: ref_logits**
         if torch.isnan(ref_logits).any() or torch.isinf(ref_logits).any():
             raise RuntimeError(f"NaN/Inf in ref_logits at step {step}")
-
-
 
         # Compute per-token NLLs
         V = logits.size(-1)
@@ -193,18 +184,15 @@ for epoch in range(num_epochs):
         if torch.isnan(ref_loss).any() or torch.isinf(ref_loss).any():
             raise RuntimeError(f"NaN/Inf in ref_loss at step {step}")
 
-
         # Sum to get sequence NLL
         nll_seq     = loss_t.sum(dim=1)
         ref_nll_seq = ref_loss.sum(dim=1)
-
 
         # **Check #4: sequence-level NLL**
         if torch.isnan(nll_seq).any() or torch.isinf(nll_seq).any():
             raise RuntimeError(f"NaN/Inf in nll_seq at step {step}")
         if torch.isnan(ref_nll_seq).any() or torch.isinf(ref_nll_seq).any():
             raise RuntimeError(f"NaN/Inf in ref_nll_seq at step {step}")
-
 
         # Split chosen/rejected
         nll_c = nll_seq[0::2]; nll_r = nll_seq[1::2]
@@ -249,7 +237,7 @@ for epoch in range(num_epochs):
             optimizer.zero_grad(set_to_none=True)
 
     # Checkpoint
-    if rank == 0:
+    if master_process:
         ckpt_dir = f"dpo_models/llama-3.2-1b-dpo-epoch{epoch+1}"
         model.module.save_pretrained(ckpt_dir)
         tokenizer.save_pretrained(ckpt_dir)

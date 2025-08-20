@@ -1,9 +1,7 @@
-import torch
 from datasets import load_from_disk
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 from tqdm import tqdm
-import numpy as np
 from typing import Dict
 import json
 import logging
