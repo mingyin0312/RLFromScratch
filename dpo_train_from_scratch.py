@@ -13,7 +13,7 @@ torch.autograd.set_detect_anomaly(True)
 
 # 1. Load tokenizer
 local_dir = "Your_model" # mine is Llama-3.2-1B
-tokenizer = AutoTokenizer.from_pretrained(local_dir, use_fast=False)
+tokenizer = AutoTokenizer.from_pretrained(local_dir, use_fast=True)
 # 2. Load the train split of SAFE-RLHF
 dataset = load_from_disk("safe_pair_data/")["train"]
 print(f"There are {len(dataset)} examples.")

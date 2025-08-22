@@ -14,7 +14,7 @@ max_length = 1024
 out_file   = f"safe_rlhf_{model_name}.json"
 
 # ─── Load & Filter Test Set ──────────────────────────────────────────────────
-tokenizer = AutoTokenizer.from_pretrained(local_dir, use_fast=False)
+tokenizer = AutoTokenizer.from_pretrained(local_dir, use_fast=True)
 dataset = load_from_disk(data_dir)["test"]
 print(f"Dataset has {len(dataset)} examples\n")
 
