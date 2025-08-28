@@ -24,9 +24,9 @@ The scripts default to **multi-GPU** training with **PyTorch DDP**, and can be *
   torchrun --standalone --nproc_per_node=8 dpo/grpo_train_from_scratch.py
   ```
 
-- **Training:**  
+- **Evaluation:**  
   ```bash
-  torchrun --standalone --nproc_per_node=8 dpo/grpo_evaluation.py
+  python dpo/grpo_evaluation.py
   ```
 
 
